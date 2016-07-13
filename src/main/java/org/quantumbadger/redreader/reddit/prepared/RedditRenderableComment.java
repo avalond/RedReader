@@ -1,3 +1,20 @@
+/*******************************************************************************
+ * This file is part of RedReader.
+ *
+ * RedReader is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * RedReader is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with RedReader.  If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************/
+
 package org.quantumbadger.redreader.reddit.prepared;
 
 import android.content.Context;
@@ -37,7 +54,7 @@ public class RedditRenderableComment implements RedditRenderableInboxItem, Reddi
 		mShowScore = showScore;
 	}
 
-	private int computeScore(final RedditChangeDataManagerVolatile changeDataManager) {
+	private int computeScore(final RedditChangeDataManager changeDataManager) {
 
 		final RedditComment rawComment = mComment.getRawComment();
 
@@ -58,7 +75,7 @@ public class RedditRenderableComment implements RedditRenderableInboxItem, Reddi
 	@Override
 	public CharSequence getHeader(
 			final RRThemeAttributes theme,
-			final RedditChangeDataManagerVolatile changeDataManager,
+			final RedditChangeDataManager changeDataManager,
 			final Context context) {
 
 		final BetterSSB sb = new BetterSSB();
@@ -206,8 +223,8 @@ public class RedditRenderableComment implements RedditRenderableInboxItem, Reddi
 	@Override
 	public void handleInboxLongClick(final AppCompatActivity activity) {
 
-		final RedditChangeDataManagerVolatile changeDataManager
-				= RedditChangeDataManagerVolatile.getInstance(
+		final RedditChangeDataManager changeDataManager
+				= RedditChangeDataManager.getInstance(
 						RedditAccountManager.getInstance(activity).getDefaultAccount());
 
 		RedditAPICommentAction.showActionMenu(
@@ -234,7 +251,7 @@ public class RedditRenderableComment implements RedditRenderableInboxItem, Reddi
 		return mComment;
 	}
 
-	private boolean isScoreBelowThreshold(final RedditChangeDataManagerVolatile changeDataManager) {
+	private boolean isScoreBelowThreshold(final RedditChangeDataManager changeDataManager) {
 
 		if(mMinimumCommentScore == null) {
 			return false;
@@ -247,7 +264,7 @@ public class RedditRenderableComment implements RedditRenderableInboxItem, Reddi
 		return (computeScore(changeDataManager) < mMinimumCommentScore);
 	}
 
-	public boolean isCollapsed(final RedditChangeDataManagerVolatile changeDataManager) {
+	public boolean isCollapsed(final RedditChangeDataManager changeDataManager) {
 
 		final Boolean collapsed = changeDataManager.isHidden(this);
 

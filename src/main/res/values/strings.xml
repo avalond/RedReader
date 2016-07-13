@@ -806,4 +806,30 @@
 
 	<string name="error_tor_start_failed">Orbot failed to start. Tor will not work correctly.</string>
 
+	<!-- 2016-06-30 -->
+	<string name="inbox_unread_only">Unread Messages Only</string>
+	
+	<!-- 2016-07-02 -->
+	<string name="pref_behaviour_actions_comment_longclick_key">pref_behaviour_actions_comment_longclick</string>
+	<string name="pref_behaviour_actions_comment_longclick_title">Comment Long Click Action</string>
+
+	<string name="no_comments_yet">No comments yet.</string>
+
+	<!-- 2016-07-09 -->
+	<string name="pm_send_hint_recipient">Recipient</string>
+	<string name="pm_send_hint_subject">Subject</string>
+	<string name="pm_send_hint_message_text">Message text</string>
+
+	<string name="pm_send_done">Message sent.</string>
+
+	<string name="userprofile_pm">Send Message</string>
+
+	<string name="error_too_long_title">Too long</string>
+	<string name="error_too_long_message">Reddit says that the text you entered is too long.</string>
+
+	<string name="pm_send_actionbar">Send Message</string>
+	<string name="submit_post_actionbar">Submit Post</string>
+	<string name="submit_comment_actionbar">Submit Comment</string>
+	<string name="edit_comment_actionbar">Edit Comment</string>
+
 </resources>

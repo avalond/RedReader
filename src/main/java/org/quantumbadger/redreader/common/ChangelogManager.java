@@ -1,3 +1,20 @@
+/*******************************************************************************
+ * This file is part of RedReader.
+ *
+ * RedReader is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * RedReader is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with RedReader.  If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************/
+
 package org.quantumbadger.redreader.common;
 
 import android.support.v7.app.AppCompatActivity;
@@ -12,7 +29,7 @@ import java.io.InputStreamReader;
 
 public class ChangelogManager {
 
-	public static void generateViews(AppCompatActivity context, LinearLayout items) {
+	public static void generateViews(AppCompatActivity context, LinearLayout items, boolean showAll) {
 
 		final RRThemeAttributes attr = new RRThemeAttributes(context);
 
@@ -21,10 +38,13 @@ public class ChangelogManager {
 
 		try {
 			final BufferedReader br = new BufferedReader(
-				new InputStreamReader(context.getAssets().open("changelog.txt")));
+				new InputStreamReader(context.getAssets().open("changelog.txt")),
+				128 * 1024);
 
 			int curVersionCode = -1;
 			String curVersionName = null;
+
+			int itemsToShow = 10;
 
 			String line;
 			while((line = br.readLine()) != null) {
@@ -33,6 +53,13 @@ public class ChangelogManager {
 
 					curVersionCode = -1;
 					curVersionName = null;
+
+					if(!showAll) {
+						itemsToShow--;
+						if(itemsToShow <= 0) {
+							break;
+						}
+					}
 
 				} else if(curVersionName == null) {
 

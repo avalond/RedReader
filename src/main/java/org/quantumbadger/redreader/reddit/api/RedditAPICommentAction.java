@@ -21,7 +21,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.text.ClipboardManager;
 import android.widget.Toast;
@@ -42,11 +41,9 @@ import org.quantumbadger.redreader.fragments.CommentListingFragment;
 import org.quantumbadger.redreader.fragments.CommentPropertiesDialog;
 import org.quantumbadger.redreader.reddit.APIResponseHandler;
 import org.quantumbadger.redreader.reddit.RedditAPI;
-import org.quantumbadger.redreader.reddit.prepared.RedditChangeDataManagerVolatile;
+import org.quantumbadger.redreader.reddit.prepared.RedditChangeDataManager;
 import org.quantumbadger.redreader.reddit.prepared.RedditRenderableComment;
 import org.quantumbadger.redreader.reddit.things.RedditComment;
-import org.quantumbadger.redreader.reddit.url.PostCommentListingURL;
-import org.quantumbadger.redreader.reddit.url.RedditURLParser;
 import org.quantumbadger.redreader.reddit.url.UserProfileURL;
 import org.quantumbadger.redreader.views.RedditCommentView;
 
@@ -90,7 +87,7 @@ public class RedditAPICommentAction {
 			final CommentListingFragment commentListingFragment,
 			final RedditRenderableComment comment,
 			final RedditCommentView commentView,
-			final RedditChangeDataManagerVolatile changeDataManager,
+			final RedditChangeDataManager changeDataManager,
 			final boolean isArchived) {
 
 		final RedditAccount user = RedditAccountManager.getInstance(activity).getDefaultAccount();
@@ -177,7 +174,7 @@ public class RedditAPICommentAction {
 			final AppCompatActivity activity,
 			final CommentListingFragment commentListingFragment,
 			final RedditCommentAction action,
-			final RedditChangeDataManagerVolatile changeDataManager) {
+			final RedditChangeDataManager changeDataManager) {
 
 		final RedditComment comment = renderableComment.getParsedComment().getRawComment();
 
@@ -310,27 +307,12 @@ public class RedditAPICommentAction {
 				break;
 
 			case GO_TO_COMMENT: {
-
-				String rawContextUrl = comment.context;
-
-				if(rawContextUrl.startsWith("r/")) {
-					rawContextUrl = "/" + rawContextUrl;
-				}
-
-				if(rawContextUrl.startsWith("/")) {
-					rawContextUrl = "https://reddit.com" + rawContextUrl;
-				}
-
-				final RedditURLParser.RedditURL contextUrl = RedditURLParser.parse(Uri.parse(rawContextUrl));
-
-				final PostCommentListingURL url = contextUrl.asPostCommentListURL().context(null);
-
-				LinkHandler.onLinkClicked(activity, url.toString());
+				LinkHandler.onLinkClicked(activity, comment.getContextUrl().context(null).toString());
 				break;
 			}
 
 			case CONTEXT: {
-				LinkHandler.onLinkClicked(activity, comment.context);
+				LinkHandler.onLinkClicked(activity, comment.getContextUrl().toString());
 				break;
 			}
 		}
@@ -340,7 +322,7 @@ public class RedditAPICommentAction {
 			final AppCompatActivity activity,
 			final RedditComment comment,
 			final @RedditAPI.RedditAction int action,
-			final RedditChangeDataManagerVolatile changeDataManager) {
+			final RedditChangeDataManager changeDataManager) {
 
 		final RedditAccount user = RedditAccountManager.getInstance(activity).getDefaultAccount();
 

@@ -18,6 +18,7 @@
 package org.quantumbadger.redreader.adapters;
 
 import android.content.Context;
+import android.support.v7.widget.LinearLayoutManager;
 import android.view.View;
 import org.quantumbadger.redreader.common.General;
 import org.quantumbadger.redreader.reddit.RedditCommentListItem;
@@ -31,6 +32,9 @@ import java.util.Collections;
 public class CommentListingManager {
 
 	private final GroupedRecyclerViewAdapter mAdapter = new GroupedRecyclerViewAdapter(6);
+	private LinearLayoutManager mLayoutManager;
+
+	private int mCommentCount = 0;
 
 	private static final int
 			GROUP_POST_HEADER = 0,
@@ -41,12 +45,9 @@ public class CommentListingManager {
 			GROUP_FOOTER_ERRORS = 5;
 
 	private final GroupedRecyclerViewItemFrameLayout mLoadingItem;
+	private boolean mWorkaroundDone = false;
 
 	public CommentListingManager(final Context context) {
-
-		// Workaround for RecyclerView scrolling behaviour
-		final View topmostView = new View(context);
-		mAdapter.appendToGroup(0, new GroupedRecyclerViewItemFrameLayout(topmostView));
 
 		final LoadingSpinnerView loadingSpinnerView = new LoadingSpinnerView(context);
 		final int paddingPx = General.dpToPixels(context, 30);
@@ -56,26 +57,48 @@ public class CommentListingManager {
 		mAdapter.appendToGroup(GROUP_LOADING, mLoadingItem);
 	}
 
+	public void setLayoutManager(final LinearLayoutManager layoutManager) {
+		mLayoutManager = layoutManager;
+	}
+
+	// Workaround for RecyclerView scrolling behaviour
+	private void doWorkaround() {
+		if(!mWorkaroundDone && mLayoutManager != null) {
+			mLayoutManager.scrollToPositionWithOffset(0, 0);
+			mWorkaroundDone = true;
+		}
+	}
+
 	public void addFooterError(final ErrorView view) {
 		mAdapter.appendToGroup(GROUP_FOOTER_ERRORS, new GroupedRecyclerViewItemFrameLayout(view));
 	}
 
 	public void addPostHeader(final RedditPostHeaderView view) {
 		mAdapter.appendToGroup(GROUP_POST_HEADER, new GroupedRecyclerViewItemFrameLayout(view));
+		doWorkaround();
 	}
 
 	public void addPostSelfText(final View view) {
 		mAdapter.appendToGroup(GROUP_POST_SELFTEXT, new GroupedRecyclerViewItemFrameLayout(view));
+		doWorkaround();
 	}
 
 	public void addNotification(final View view) {
 		mAdapter.appendToGroup(GROUP_NOTIFICATIONS, new GroupedRecyclerViewItemFrameLayout(view));
+		doWorkaround();
 	}
 
 	public void addComments(final Collection<RedditCommentListItem> comments) {
 		mAdapter.appendToGroup(
 				GROUP_COMMENTS,
 				Collections.<GroupedRecyclerViewAdapter.Item>unmodifiableCollection(comments));
+		mCommentCount += comments.size();
+		doWorkaround();
+	}
+
+	public void addViewToComments(final View view) {
+		mAdapter.appendToGroup(GROUP_COMMENTS, new GroupedRecyclerViewItemFrameLayout(view));
+		doWorkaround();
 	}
 
 	public void setLoadingVisible(final boolean visible) {
@@ -97,5 +120,9 @@ public class CommentListingManager {
 
 	public int getItemCount() {
 		return mAdapter.getItemCount();
+	}
+
+	public int getCommentCount() {
+		return mCommentCount;
 	}
 }

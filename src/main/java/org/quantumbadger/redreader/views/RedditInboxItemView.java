@@ -17,6 +17,7 @@
 
 package org.quantumbadger.redreader.views;
 
+import android.graphics.Color;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -27,13 +28,14 @@ import android.widget.TextView;
 import org.quantumbadger.redreader.common.General;
 import org.quantumbadger.redreader.common.PrefsUtility;
 import org.quantumbadger.redreader.common.RRThemeAttributes;
-import org.quantumbadger.redreader.reddit.prepared.RedditChangeDataManagerVolatile;
+import org.quantumbadger.redreader.reddit.prepared.RedditChangeDataManager;
 import org.quantumbadger.redreader.reddit.prepared.RedditRenderableInboxItem;
 
 public class RedditInboxItemView extends LinearLayout {
 
-	private final TextView header;
-	private final FrameLayout bodyHolder;
+	private final View mDivider;
+	private final TextView mHeader;
+	private final FrameLayout mBodyHolder;
 
 	private final RRThemeAttributes mTheme;
 
@@ -43,38 +45,47 @@ public class RedditInboxItemView extends LinearLayout {
 
 	private final AppCompatActivity mActivity;
 
-	public RedditInboxItemView(final AppCompatActivity activity, final RRThemeAttributes theme) {
+	public RedditInboxItemView(
+			final AppCompatActivity activity,
+			final RRThemeAttributes theme) {
 
 		super(activity);
 
 		mActivity = activity;
 		mTheme = theme;
 
-		setOrientation(HORIZONTAL);
+		setOrientation(VERTICAL);
 
-		final LinearLayout main = new LinearLayout(activity);
-		main.setOrientation(VERTICAL);
+		mDivider = new View(activity);
+		mDivider.setBackgroundColor(Color.argb(128, 128, 128, 128)); // TODO better
+		addView(mDivider);
 
-		header = new TextView(activity);
-		header.setTextSize(11.0f * theme.rrCommentFontScale);
-		header.setTextColor(theme.rrCommentHeaderCol);
-		main.addView(header);
-		header.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
+		mDivider.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
+		mDivider.getLayoutParams().height = 1;
 
-		bodyHolder = new FrameLayout(activity);
-		bodyHolder.setPadding(0, General.dpToPixels(activity, 2), 0, 0);
-		main.addView(bodyHolder);
-		bodyHolder.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
+		final LinearLayout inner = new LinearLayout(activity);
+		inner.setOrientation(VERTICAL);
+
+		mHeader = new TextView(activity);
+		mHeader.setTextSize(11.0f * theme.rrCommentFontScale);
+		mHeader.setTextColor(theme.rrCommentHeaderCol);
+		inner.addView(mHeader);
+		mHeader.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
+
+		mBodyHolder = new FrameLayout(activity);
+		mBodyHolder.setPadding(0, General.dpToPixels(activity, 2), 0, 0);
+		inner.addView(mBodyHolder);
+		mBodyHolder.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
 
 		final int paddingPixels = General.dpToPixels(activity, 8.0f);
-		setPadding(paddingPixels + paddingPixels, paddingPixels, paddingPixels, paddingPixels);
+		inner.setPadding(paddingPixels + paddingPixels, paddingPixels, paddingPixels, paddingPixels);
+
+		addView(inner);
+		inner.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
 
 		setDescendantFocusability(FOCUS_BLOCK_DESCENDANTS);
 
 		showLinkButtons = PrefsUtility.pref_appearance_linkbuttons(activity, PreferenceManager.getDefaultSharedPreferences(activity));
-
-		addView(main);
-		main.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
 
 		setOnClickListener(new OnClickListener() {
 			@Override
@@ -94,13 +105,15 @@ public class RedditInboxItemView extends LinearLayout {
 
 	public void reset(
 			final AppCompatActivity context,
-			final RedditChangeDataManagerVolatile changeDataManager,
+			final RedditChangeDataManager changeDataManager,
 			final RRThemeAttributes theme,
-			final RedditRenderableInboxItem item) {
+			final RedditRenderableInboxItem item,
+			final boolean showDividerAtTop) {
 
 		currentItem = item;
 
-		header.setText(item.getHeader(theme, changeDataManager, context));
+		mDivider.setVisibility(showDividerAtTop ? VISIBLE : GONE);
+		mHeader.setText(item.getHeader(theme, changeDataManager, context));
 
 		final View body = item.getBody(
 			context,
@@ -108,8 +121,8 @@ public class RedditInboxItemView extends LinearLayout {
 			13.0f * mTheme.rrCommentFontScale,
 			showLinkButtons);
 
-		bodyHolder.removeAllViews();
-		bodyHolder.addView(body);
+		mBodyHolder.removeAllViews();
+		mBodyHolder.addView(body);
 		body.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
 	}
 

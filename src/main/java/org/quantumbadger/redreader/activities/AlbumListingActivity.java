@@ -19,10 +19,7 @@ package org.quantumbadger.redreader.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -38,6 +35,7 @@ import org.quantumbadger.redreader.image.GetAlbumInfoListener;
 import org.quantumbadger.redreader.image.GetImageInfoListener;
 import org.quantumbadger.redreader.image.ImageInfo;
 import org.quantumbadger.redreader.image.ImgurAPI;
+import org.quantumbadger.redreader.views.ScrollbarRecyclerViewManager;
 
 import java.util.regex.Matcher;
 
@@ -53,11 +51,10 @@ public class AlbumListingActivity extends BaseActivity {
 
 		super.onCreate(savedInstanceState);
 
-		OptionsMenuUtility.fixActionBar(AlbumListingActivity.this, getString(R.string.imgur_album));
-
 		if(getSupportActionBar() != null) {
 			getSupportActionBar().setHomeButtonEnabled(true);
 			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+			getSupportActionBar().setTitle(R.string.imgur_album);
 		}
 
 		final Intent intent = getIntent();
@@ -136,21 +133,17 @@ public class AlbumListingActivity extends BaseActivity {
 					public void run() {
 
 						if(info.title != null && !info.title.trim().isEmpty()) {
-							OptionsMenuUtility.fixActionBar(AlbumListingActivity.this, getString(R.string.imgur_album) + ": " + info.title);
+							getSupportActionBar().setTitle(getString(R.string.imgur_album) + ": " + info.title);
 						}
 
 						layout.removeAllViews();
 
-						final RecyclerView rv = (RecyclerView)LayoutInflater.from(AlbumListingActivity.this).inflate(
-								R.layout.scrollbar_recyclerview,
-								null);
+						final ScrollbarRecyclerViewManager recyclerViewManager
+								= new ScrollbarRecyclerViewManager(AlbumListingActivity.this, null, false);
 
-						layout.addView(rv);
+						layout.addView(recyclerViewManager.getOuterView());
 
-						final LinearLayoutManager layoutManager = new LinearLayoutManager(AlbumListingActivity.this);
-						layoutManager.setSmoothScrollbarEnabled(true);
-						rv.setLayoutManager(layoutManager);
-						rv.setAdapter(new AlbumAdapter(AlbumListingActivity.this, info));
+						recyclerViewManager.getRecyclerView().setAdapter(new AlbumAdapter(AlbumListingActivity.this, info));
 					}
 				});
 			}

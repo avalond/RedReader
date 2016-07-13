@@ -50,13 +50,14 @@ import org.quantumbadger.redreader.common.RRTime;
 import org.quantumbadger.redreader.reddit.CommentListingRequest;
 import org.quantumbadger.redreader.reddit.RedditCommentListItem;
 import org.quantumbadger.redreader.reddit.api.RedditAPICommentAction;
-import org.quantumbadger.redreader.reddit.prepared.RedditChangeDataManagerVolatile;
+import org.quantumbadger.redreader.reddit.prepared.RedditChangeDataManager;
 import org.quantumbadger.redreader.reddit.prepared.RedditPreparedPost;
 import org.quantumbadger.redreader.reddit.prepared.RedditRenderableComment;
 import org.quantumbadger.redreader.reddit.url.RedditURLParser;
 import org.quantumbadger.redreader.views.RedditCommentView;
 import org.quantumbadger.redreader.views.RedditPostHeaderView;
 import org.quantumbadger.redreader.views.RedditPostView;
+import org.quantumbadger.redreader.views.ScrollbarRecyclerViewManager;
 import org.quantumbadger.redreader.views.bezelmenu.BezelSwipeOverlay;
 import org.quantumbadger.redreader.views.bezelmenu.SideToolbarOverlay;
 import org.quantumbadger.redreader.views.liststatus.ErrorView;
@@ -129,17 +130,14 @@ public class CommentListingFragment extends RRFragment
 
 		mOuterFrame = new FrameLayout(context);
 
-		mRecyclerView = (RecyclerView)LayoutInflater.from(context).inflate(
-				R.layout.scrollbar_recyclerview,
-				null);
+		final ScrollbarRecyclerViewManager recyclerViewManager
+				= new ScrollbarRecyclerViewManager(context, null, false);
 
-		final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
-		mRecyclerView.setLayoutManager(linearLayoutManager);
-		mRecyclerView.setHasFixedSize(true);
-		linearLayoutManager.setSmoothScrollbarEnabled(false);
+		mRecyclerView = recyclerViewManager.getRecyclerView();
+		mCommentListingManager.setLayoutManager((LinearLayoutManager) mRecyclerView.getLayoutManager());
 
 		mRecyclerView.setAdapter(mCommentListingManager.getAdapter());
-		mOuterFrame.addView(mRecyclerView);
+		mOuterFrame.addView(recyclerViewManager.getOuterView());
 
 		{
 			final RecyclerView.ItemAnimator itemAnimator = mRecyclerView.getItemAnimator();
@@ -188,7 +186,7 @@ public class CommentListingFragment extends RRFragment
 
 	public void handleCommentVisibilityToggle(final RedditCommentView view) {
 
-		final RedditChangeDataManagerVolatile changeDataManager = RedditChangeDataManagerVolatile.getInstance(mUser);
+		final RedditChangeDataManager changeDataManager = RedditChangeDataManager.getInstance(mUser);
 		final RedditCommentListItem item = view.getComment();
 
 		if(item.isComment()) {
@@ -271,7 +269,7 @@ public class CommentListingFragment extends RRFragment
 							this,
 							item.asComment(),
 							view,
-							RedditChangeDataManagerVolatile.getInstance(mUser),
+							RedditChangeDataManager.getInstance(mUser),
 							isArchived);
 				}
 				break;
@@ -281,15 +279,11 @@ public class CommentListingFragment extends RRFragment
 
 	@Override
 	public void onCommentLongClicked(final RedditCommentView view) {
-		switch(PrefsUtility.pref_behaviour_actions_comment_tap(
+		switch(PrefsUtility.pref_behaviour_actions_comment_longclick(
 			getActivity(),
 			PreferenceManager.getDefaultSharedPreferences(getActivity()))) {
 
-			case ACTION_MENU:
-				handleCommentVisibilityToggle(view);
-				break;
-
-			case COLLAPSE:case NOTHING: {
+			case ACTION_MENU:{
 				final RedditCommentListItem item = view.getComment();
 				if(item != null && item.isComment()) {
 					RedditAPICommentAction.showActionMenu(
@@ -297,12 +291,18 @@ public class CommentListingFragment extends RRFragment
 						this,
 						item.asComment(),
 						view,
-						RedditChangeDataManagerVolatile.getInstance(mUser),
+						RedditChangeDataManager.getInstance(mUser),
 						isArchived);
 				}
 				break;
 			}
 
+			case COLLAPSE:
+				handleCommentVisibilityToggle(view);
+				break;
+
+			case NOTHING:
+				break;
 		}
 	}
 
@@ -363,6 +363,7 @@ public class CommentListingFragment extends RRFragment
 					CommentListingFragment.this.mPost);
 
 			mCommentListingManager.addPostHeader(postHeader);
+			((LinearLayoutManager)mRecyclerView.getLayoutManager()).scrollToPositionWithOffset(0, 0);
 
 			if(post.src.getSelfText() != null) {
 				final ViewGroup selfText = post.src.getSelfText().buildView(
@@ -425,6 +426,17 @@ public class CommentListingFragment extends RRFragment
 		}
 
 		if(mUrlsToDownload.isEmpty()) {
+
+			if(mCommentListingManager.getCommentCount() == 0) {
+
+				final View noCommentsYet = LayoutInflater.from(getContext()).inflate(
+						R.layout.no_comments_yet,
+						mRecyclerView,
+						false);
+
+				mCommentListingManager.addViewToComments(noCommentsYet);
+			}
+
 			mCommentListingManager.setLoadingVisible(false);
 
 		} else {

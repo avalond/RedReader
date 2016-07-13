@@ -324,6 +324,11 @@ public final class General {
 				message = R.string.error_too_fast_message;
 				break;
 
+			case TOO_LONG:
+				title = R.string.error_too_long_title;
+				message = R.string.error_too_long_message;
+				break;
+
 			default:
 				title = R.string.error_unknown_api_title;
 				message = R.string.error_unknown_api_message;
@@ -474,6 +479,20 @@ public final class General {
 			if(chars[i] >= 'a' && chars[i] <= 'z') {
 				chars[i] -= 'a';
 				chars[i] += 'A';
+			}
+		}
+
+		return new String(chars);
+	}
+
+	public static String asciiLowercase(final String input) {
+
+		final char[] chars = input.toCharArray();
+
+		for(int i = 0; i < chars.length; i++) {
+			if(chars[i] >= 'A' && chars[i] <= 'Z') {
+				chars[i] -= 'A';
+				chars[i] += 'a';
 			}
 		}
 
